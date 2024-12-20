@@ -1,0 +1,34 @@
+# Ignore IDE files
+.settings/
+.classpath
+.project
+
+# Ignore target directory (Maven build output)
+target/
+
+# Ignore log files
+*.log
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore Maven wrapper files
+.mvn/
+mvnw
+mvnw.cmd
+
+# Ignore compiled class files
+*.class
+
+# Ignore JAR, WAR, EAR files
+*.jar
+*.war
+*.ear
+
+# Ignore local configuration files
+*.properties
+
+.allure
+
+.pro
