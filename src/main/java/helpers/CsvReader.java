@@ -1,13 +1,11 @@
+
 package helpers;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
-
 import config.ConfigManager;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,21 +24,23 @@ public class CsvReader {
     public static List<Map<String, String>> readCsv(String fileName) throws IOException {
         // Get the base directory path for the test data folder
         String basePath = ConfigManager.get("testDataFolderLocation");
-        if (basePath == null) {
-            logger.error("Base directory for test data folder is not defined in config.properties.");
-            throw new IOException("Base directory for test data folder is not defined.");
+        if (basePath == null || basePath.isEmpty()) {
+            String errorMsg = "Base directory for test data folder is not defined in config.properties.";
+            logger.error(errorMsg);
+            throw new IOException(errorMsg);
         }
 
         // Append the file name to the base path to form the complete file path
         String filePath = basePath + fileName;
-
         logger.info("Reading CSV file from: {}", filePath);
 
         List<Map<String, String>> data = new ArrayList<>();
         try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
             String[] headers = reader.readNext();
             if (headers == null) {
-                throw new IOException("CSV file is empty.");
+                String errorMsg = "CSV file is empty.";
+                logger.error(errorMsg);
+                throw new IOException(errorMsg);
             }
 
             String[] row;
@@ -57,8 +57,13 @@ public class CsvReader {
                 data.add(rowData);
             }
         } catch (CsvValidationException e) {
-            logger.error("Error validating CSV file: {}", e.getMessage());
-            throw new IOException("Error validating CSV file: " + e.getMessage(), e);
+            String errorMsg = "Error validating CSV file: " + e.getMessage();
+            logger.error(errorMsg, e);
+            throw new IOException(errorMsg, e);
+        } catch (IOException e) {
+            String errorMsg = "Error reading CSV file: " + e.getMessage();
+            logger.error(errorMsg, e);
+            throw e;
         }
 
         logger.info("CSV file successfully read with {} rows.", data.size());

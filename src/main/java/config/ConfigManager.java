@@ -1,9 +1,9 @@
+
 package config;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -19,7 +19,7 @@ public class ConfigManager {
 
     // Logger for logging information, warnings, and errors related to configuration loading
     private static final Logger logger = LogManager.getLogger(ConfigManager.class);
-    
+
     // Property object that holds the loaded configuration properties
     private static volatile Properties props;
 
@@ -36,10 +36,10 @@ public class ConfigManager {
      * Loads properties from the config file.
      * This method is synchronized to ensure thread safety during property loading.
      * It will read the properties from the classpath resource "config.properties".
-     * 
+     *
      * If the properties file is loaded successfully, an info log is generated.
      * If an error occurs during loading, an error log is generated.
-     * 
+     *
      * @throws RuntimeException if the properties file cannot be loaded.
      */
     private static synchronized void loadProperties() {
@@ -48,8 +48,9 @@ public class ConfigManager {
                 if (input == null) {
                     throw new IOException("Configuration file not found");
                 }
-                props = new Properties();
-                props.load(input);  // Load properties from the classpath
+                Properties tempProps = new Properties();
+                tempProps.load(input);  // Load properties from the classpath
+                props = tempProps;
                 logger.info("Configuration loaded successfully.");
             } catch (IOException e) {
                 logger.error("Failed to load configuration file", e);
@@ -61,32 +62,36 @@ public class ConfigManager {
     /**
      * Retrieves the value of a configuration property by its key.
      * If the properties are not loaded yet, it will load them before fetching the value.
-     * 
+     *
      * @param key The key for the configuration property.
      * @return The value of the configuration property, or null if the key doesn't exist.
      *         If the properties file is not loaded, it will load the properties first before retrieving the value.
      */
     public static String get(String key) {
-        if (props == null) {
-            logger.info("Properties have not been loaded yet. Loading now.");
-            loadProperties();  // Ensure properties are loaded if not already
-        }
+        ensurePropertiesLoaded();
         return props != null ? props.getProperty(key) : null;
     }
 
     /**
      * Retrieves the value of a configuration property by its key, with a default value if the key is not found.
-     * 
+     *
      * @param key The key for the configuration property.
      * @param defaultValue The value to return if the key doesn't exist.
      * @return The value of the configuration property, or the default value if the key doesn't exist.
      */
     public static String get(String key, String defaultValue) {
+        ensurePropertiesLoaded();
+        return props != null ? props.getProperty(key, defaultValue) : defaultValue;
+    }
+
+    /**
+     * Ensures that properties are loaded.
+     */
+    private static void ensurePropertiesLoaded() {
         if (props == null) {
             logger.info("Properties have not been loaded yet. Loading now.");
             loadProperties();  // Ensure properties are loaded if not already
         }
-        return props != null ? props.getProperty(key, defaultValue) : defaultValue;
     }
 
     /**
@@ -94,6 +99,7 @@ public class ConfigManager {
      */
     public static synchronized void reloadProperties() {
         logger.info("Reloading configuration properties.");
+        props = null;
         loadProperties();  // Reload properties
     }
 }

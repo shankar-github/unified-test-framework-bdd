@@ -1,3 +1,4 @@
+#
 #Feature: Patch User API
 #
   #Scenario: Partially update an existing user's details

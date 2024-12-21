@@ -1,3 +1,4 @@
+
 package database;
 
 import java.sql.Connection;
@@ -52,28 +53,35 @@ public class MySQLConnector {
         if (connection == null) {
             synchronized (MySQLConnector.class) {
                 if (connection == null) {
-                    try {
-                        // Retrieve MySQL connection details from configuration
-                        String url = ConfigManager.get("mysql.url");
-                        String username = ConfigManager.get("mysql.username");
-                        String password = ConfigManager.get("mysql.password");
-
-                        // Validate configuration values
-                        if (url == null || url.isEmpty() || username == null || username.isEmpty() || password == null || password.isEmpty()) {
-                            throw new IllegalStateException("MySQL connection details are not properly configured.");
-                        }
-
-                        // Establish the connection using JDBC
-                        connection = DriverManager.getConnection(url, username, password);
-                        logger.info("Connected to MySQL database successfully."); // Log success
-                    } catch (SQLException e) {
-                        logger.error("Failed to connect to MySQL database", e); // Log error if connection fails
-                        throw new RuntimeException("MySQL connection failed", e); // Throw runtime exception if connection fails
-                    }
+                    initializeConnection();
                 }
             }
         }
         return connection; // Return the established connection
+    }
+
+    /**
+     * Initializes the MySQL connection using the JDBC DriverManager.
+     * This method is synchronized to ensure thread safety during initialization.
+     */
+    private static synchronized void initializeConnection() {
+        try {
+            // Retrieve MySQL connection details from configuration
+            String url = ConfigManager.get("mysql.url");
+            String username = ConfigManager.get("mysql.username");
+            String password = ConfigManager.get("mysql.password");
+
+            // Validate configuration values
+            if (url == null || url.isEmpty() || username == null || username.isEmpty() || password == null || password.isEmpty()) {
+                throw new IllegalStateException("MySQL connection details are not properly configured.");
+            }
+
+            // Establish the connection using JDBC
+            connection = DriverManager.getConnection(url, username, password);
+        } catch (SQLException e) {
+            logger.error("Failed to connect to MySQL database", e); // Log error if connection fails
+            throw new RuntimeException("MySQL connection failed", e); // Throw runtime exception if connection fails
+        }
     }
 
     /**

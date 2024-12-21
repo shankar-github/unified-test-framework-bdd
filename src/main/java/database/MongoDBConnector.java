@@ -1,3 +1,4 @@
+
 package database;
 
 import com.mongodb.client.MongoClient;
@@ -17,7 +18,7 @@ public class MongoDBConnector {
 
     // Logger for logging information and errors related to MongoDB connection
     private static final Logger logger = LogManager.getLogger(MongoDBConnector.class);
-    
+
     // MongoDB client and database instances, using volatile for thread safety
     private static volatile MongoClient mongoClient;
     private static volatile MongoDatabase database;
@@ -35,7 +36,7 @@ public class MongoDBConnector {
      * This method ensures that the connection is established only once using double-checked locking.
      * If the database is not already connected, it initializes the connection and retrieves the database.
      * The MongoDB URI and database name are retrieved from the configuration manager.
-     * 
+     *
      * @return The MongoDatabase instance.
      * @throws RuntimeException If the MongoDB connection fails.
      */
@@ -43,26 +44,34 @@ public class MongoDBConnector {
         if (database == null) {
             synchronized (MongoDBConnector.class) {
                 if (database == null) {
-                    try {
-                        // Retrieve MongoDB URI and database name from configuration
-                        String uri = ConfigManager.get("mongodb.uri");
-                        String dbName = ConfigManager.get("mongodb.database");
-
-                        if (uri == null || uri.isEmpty() || dbName == null || dbName.isEmpty()) {
-                            throw new IllegalStateException("MongoDB URI or Database name is not configured.");
-                        }
-
-                        mongoClient = MongoClients.create(uri);  // Create MongoClient with the URI
-                        database = mongoClient.getDatabase(dbName);  // Get the database instance
-                        logger.info("Connected to MongoDB successfully.");  // Log success
-                    } catch (Exception e) {
-                        logger.error("Failed to connect to MongoDB", e);  // Log error if connection fails
-                        throw new RuntimeException("MongoDB connection failed", e);  // Throw runtime exception if connection fails
-                    }
+                    initializeDatabaseConnection();
                 }
             }
         }
-        return database;  // Return the MongoDatabase instance
+        return database;
+    }
+
+    /**
+     * Initializes the MongoDB connection and retrieves the database instance.
+     * This method is synchronized to ensure thread safety during initialization.
+     */
+    private static synchronized void initializeDatabaseConnection() {
+        try {
+            // Retrieve MongoDB URI and database name from configuration
+            String uri = ConfigManager.get("mongodb.uri");
+            String dbName = ConfigManager.get("mongodb.database");
+
+            if (uri == null || uri.isEmpty() || dbName == null || dbName.isEmpty()) {
+                throw new IllegalStateException("MongoDB URI or Database name is not configured.");
+            }
+
+            mongoClient = MongoClients.create(uri);  // Create MongoClient with the URI
+            database = mongoClient.getDatabase(dbName);  // Get the database instance
+            logger.info("Connected to MongoDB successfully.");  // Log success
+        } catch (Exception e) {
+            logger.error("Failed to connect to MongoDB", e);  // Log error if connection fails
+            throw new RuntimeException("MongoDB connection failed", e);  // Throw runtime exception if connection fails
+        }
     }
 
     /**

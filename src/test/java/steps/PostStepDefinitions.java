@@ -20,102 +20,100 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class PostStepDefinitions {
 
     private static final Logger logger = LogManager.getLogger(PostStepDefinitions.class);
-    private final APIBase apiBase = new APIBase(); // Assuming ApiBase is your base API class
+    private final APIBase apiBase = new APIBase();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Given("I send a POST request with the JSON data:")
     public void sendPostRequestWithJson(String jsonData) {
-        logger.info("Sending POST request with JSON data: {}", jsonData);
-        apiBase.sendRequest("POST", "/users", HeaderManager.getHeaders(), Map.of("body", jsonData));
+        try {
+            logger.info("Sending POST request with JSON data: {}", jsonData);
+            apiBase.sendRequest("POST", "/users", HeaderManager.getHeaders(), Map.of("body", jsonData));
+        } catch (Exception e) {
+            logger.error("Error sending POST request: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
- 
     @Given("I send a POST request with the following details:")
-    public void sendPostRequestWithDetails(DataTable table) throws JsonProcessingException {
-        // Convert the DataTable to a List of Maps to handle the key-value pairs per row
+    public void sendPostRequestWithDetails(DataTable table) {
         List<Map<String, String>> dataList = table.asMaps(String.class, String.class);
 
-        // Iterate through the list and log the data or send it as JSON
         for (Map<String, String> data : dataList) {
-            logger.info("Data: {}", data);
-
-            // Convert the data map to JSON format before sending the request
-            String jsonBody = new ObjectMapper().writeValueAsString(data);
-
-            // Send the POST request with the JSON body
-            apiBase.sendRequest("POST", "/users", HeaderManager.getHeaders(), Map.of("body", jsonBody));
+            try {
+                logger.info("Data: {}", data);
+                String jsonBody = objectMapper.writeValueAsString(data);
+                apiBase.sendRequest("POST", "/users", HeaderManager.getHeaders(), Map.of("body", jsonBody));
+            } catch (JsonProcessingException e) {
+                logger.error("Error processing JSON: {}", e.getMessage(), e);
+                throw new RuntimeException("Failed to process JSON", e);
+            }
         }
     }
-
-
 
     @Given("I send a POST request with user data from CSV file {string}")
-    public void sendPostRequestWithCsvFile(String csvFileName) throws IOException {
-        // Read data from CSV
-        List<Map<String, String>> csvData = CsvReader.readCsv(csvFileName);
+    public void sendPostRequestWithCsvFile(String csvFileName) {
+        try {
+            List<Map<String, String>> csvData = CsvReader.readCsv(csvFileName);
 
-        // Iterate through the data and send a POST request for each user
-        for (Map<String, String> userDetails : csvData) {
-            // Wrap user data in a Map with the "body" key (required format)
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("body", userDetails);
-
-            // Convert the request body map to a JSON string
-            String jsonBody = new ObjectMapper().writeValueAsString(requestBody);
-
-            logger.info("Sending POST request with JSON data: {}", jsonBody);
-
-            // Send the POST request
-            apiBase.sendRequest("POST", "/users", HeaderManager.getHeaders(), Map.of("body", jsonBody));
+            for (Map<String, String> userDetails : csvData) {
+                String jsonBody = objectMapper.writeValueAsString(userDetails);
+                logger.info("Sending POST request with JSON data: {}", jsonBody);
+                apiBase.sendRequest("POST", "/users", HeaderManager.getHeaders(), Map.of("body", jsonBody));
+            }
+        } catch (IOException e) {
+            logger.error("Error reading CSV file: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to read CSV file", e);
         }
     }
 
-
     @Given("I send a POST request with user data from JSON file {string}")
-    public void sendPostRequestWithJsonFile(String jsonFileName) throws IOException {
-        // Read data from JSON file
-        Map<String, String> jsonData = JsonReader.readJson(jsonFileName);
-
-        // Convert map to JSON string
-        String jsonBody = new ObjectMapper().writeValueAsString(jsonData);
-
-        logger.info("Sending POST request with JSON data: {}", jsonBody);
-        apiBase.sendRequest("POST", "/users", HeaderManager.getHeaders(), Map.of("body", jsonBody));
+    public void sendPostRequestWithJsonFile(String jsonFileName) {
+        try {
+            Map<String, String> jsonData = JsonReader.readJson(jsonFileName);
+            String jsonBody = objectMapper.writeValueAsString(jsonData);
+            logger.info("Sending POST request with JSON data: {}", jsonBody);
+            apiBase.sendRequest("POST", "/users", HeaderManager.getHeaders(), Map.of("body", jsonBody));
+        } catch (IOException e) {
+            logger.error("Error reading JSON file: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to read JSON file", e);
+        }
     }
 
     @Given("I send a POST request with user data from Excel file {string}")
-    public void sendPostRequestWithExcelFile(String excelFileName) throws IOException {
-        // Read data from Excel
-        List<Map<String, String>> excelData = ExcelReader.readExcel(excelFileName);
-
-        // List to hold all user JSON objects
-        List<Map<String, String>> usersList = new ArrayList<>();
-
-        for (Map<String, String> userDetails : excelData) {
-            // Add each user's data to the list
-            usersList.add(userDetails);
+    public void sendPostRequestWithExcelFile(String excelFileName) {
+        try {
+            List<Map<String, String>> excelData = ExcelReader.readExcel(excelFileName);
+            List<Map<String, String>> usersList = new ArrayList<>(excelData);
+            String jsonBody = objectMapper.writeValueAsString(usersList);
+            logger.info("Sending bulk POST request with JSON data: {}", jsonBody);
+            apiBase.sendRequest("POST", "/users/bulk", HeaderManager.getHeaders(), Map.of("body", jsonBody));
+        } catch (IOException e) {
+            logger.error("Error reading Excel file: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to read Excel file", e);
         }
-
-        // Convert the list of users to a JSON array
-        String jsonBody = new ObjectMapper().writeValueAsString(usersList);
-
-        logger.info("Sending bulk POST request with JSON data: {}", jsonBody);
-
-        // Send a single API request with all users in one go
-        apiBase.sendRequest("POST", "/users/bulk", HeaderManager.getHeaders(), Map.of("body", jsonBody));
     }
 
     @Then("I should receive a response with status code {int}")
-    public void validateStatusCode(int expectedStatusCode) {
-    	apiBase.verifyStatusCode(expectedStatusCode);
+    public void validatePostResponseStatusCode(int expectedStatusCode) {
+        try {
+            apiBase.verifyStatusCode(expectedStatusCode);
+        } catch (AssertionError e) {
+            logger.error("Status code verification failed: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Then("The response body should contain {string}")
-    public void validateResponseBodyContains(String expectedContent) {
-    	apiBase.verifyResponseContains(expectedContent);
+    public void validatePostResponseBodyContains(String expectedContent) {
+        try {
+            apiBase.verifyResponseContains(expectedContent);
+        } catch (AssertionError e) {
+            logger.error("Response body verification failed: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 }

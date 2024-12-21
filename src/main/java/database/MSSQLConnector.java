@@ -1,3 +1,4 @@
+
 package database;
 
 import java.sql.Connection;
@@ -17,7 +18,7 @@ public class MSSQLConnector {
 
     // Logger for logging information and errors related to MSSQL connection
     private static final Logger logger = LogManager.getLogger(MSSQLConnector.class);
-    
+
     // MSSQL connection instance, using volatile for thread safety
     private static volatile Connection connection;
 
@@ -44,7 +45,7 @@ public class MSSQLConnector {
      * This method ensures that the connection is established only once using double-checked locking.
      * If the connection is not already established, it initializes the connection using the JDBC DriverManager.
      * The MSSQL connection details (URL, username, and password) are retrieved from the configuration manager.
-     * 
+     *
      * @return The Connection instance.
      * @throws RuntimeException If the MSSQL connection fails.
      */
@@ -52,28 +53,35 @@ public class MSSQLConnector {
         if (connection == null) {
             synchronized (MSSQLConnector.class) {
                 if (connection == null) {
-                    try {
-                        // Retrieve MSSQL connection details from configuration
-                        String url = ConfigManager.get("mssql.url");
-                        String username = ConfigManager.get("mssql.username");
-                        String password = ConfigManager.get("mssql.password");
-
-                        // Validate configuration values
-                        if (url == null || url.isEmpty() || username == null || username.isEmpty() || password == null || password.isEmpty()) {
-                            throw new IllegalStateException("MSSQL connection details are not properly configured.");
-                        }
-
-                        // Establish the connection using JDBC
-                        connection = DriverManager.getConnection(url, username, password);
-                        logger.info("Connected to MSSQL database successfully.");  // Log success
-                    } catch (SQLException e) {
-                        logger.error("Failed to connect to MSSQL database", e);  // Log error if connection fails
-                        throw new RuntimeException("MSSQL connection failed", e);  // Throw runtime exception if connection fails
-                    }
+                    initializeConnection();
                 }
             }
         }
-        return connection;  // Return the established connection
+        return connection;
+    }
+
+    /**
+     * Initializes the MSSQL connection using the JDBC DriverManager.
+     * This method is synchronized to ensure thread safety during initialization.
+     */
+    private static synchronized void initializeConnection() {
+        try {
+            // Retrieve MSSQL connection details from configuration
+            String url = ConfigManager.get("mssql.url");
+            String username = ConfigManager.get("mssql.username");
+            String password = ConfigManager.get("mssql.password");
+
+            // Validate configuration values
+            if (url == null || url.isEmpty() || username == null || username.isEmpty() || password == null || password.isEmpty()) {
+                throw new IllegalStateException("MSSQL connection details are not properly configured.");
+            }
+
+            // Establish the connection using JDBC
+            connection = DriverManager.getConnection(url, username, password);
+        } catch (SQLException e) {
+            logger.error("Failed to connect to MSSQL database", e);  // Log error if connection fails
+            throw new RuntimeException("MSSQL connection failed", e);  // Throw runtime exception if connection fails
+        }
     }
 
     /**

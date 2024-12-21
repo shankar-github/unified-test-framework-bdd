@@ -1,3 +1,4 @@
+
 package helpers;
 
 import io.restassured.http.Header;
@@ -5,6 +6,7 @@ import io.restassured.http.Headers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,11 +20,12 @@ public class HeaderManager {
     private static final Logger logger = LogManager.getLogger(HeaderManager.class);
 
     // Default headers, initialized with the "Content-Type" header
-    private static final Map<String, String> DEFAULT_HEADERS = new HashMap<>();
+    private static final Map<String, String> DEFAULT_HEADERS;
 
     static {
-        // Set up default headers
-        DEFAULT_HEADERS.put("Content-Type", "application/json");
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        DEFAULT_HEADERS = Collections.unmodifiableMap(headers);
     }
 
     /**
@@ -32,16 +35,15 @@ public class HeaderManager {
      * @return A Headers object containing both default and custom headers.
      */
     public static Headers getHeaders(Map<String, String> customHeaders) {
-        logger.info("Creating headers with custom values."); // Log the action
+        logger.info("Creating headers with custom values.");
         Map<String, String> allHeaders = new HashMap<>(DEFAULT_HEADERS);
 
-        // Add custom headers to the default headers if provided
         if (customHeaders != null) {
             allHeaders.putAll(customHeaders);
         }
 
-        logger.debug("Combined headers: {}", allHeaders); // Log the combined headers
-        return createHeadersFromMap(allHeaders); // Convert to Headers object and return
+        logger.debug("Combined headers: {}", allHeaders);
+        return createHeadersFromMap(allHeaders);
     }
 
     /**
@@ -50,8 +52,8 @@ public class HeaderManager {
      * @return A Headers object containing only the default headers.
      */
     public static Headers getHeaders() {
-        logger.info("Retrieving default headers."); // Log the action
-        return getDefaultHeaders(); // Return the default headers
+        logger.info("Retrieving default headers.");
+        return getDefaultHeaders();
     }
 
     /**
@@ -62,13 +64,11 @@ public class HeaderManager {
      * @return A Headers object containing both default and the provided custom header.
      */
     public static Headers addHeader(String key, String value) {
-        logger.info("Adding a single custom header: {} = {}", key, value); // Log the custom header being added
+        logger.info("Adding a single custom header: {} = {}", key, value);
         Map<String, String> allHeaders = new HashMap<>(DEFAULT_HEADERS);
-
-        // Add the custom header
         allHeaders.put(key, value);
-        logger.debug("Updated headers with new header: {}", allHeaders); // Log the updated headers
-        return createHeadersFromMap(allHeaders); // Convert to Headers object and return
+        logger.debug("Updated headers with new header: {}", allHeaders);
+        return createHeadersFromMap(allHeaders);
     }
 
     /**
@@ -78,12 +78,11 @@ public class HeaderManager {
      * @return A Headers object containing the provided header key-value pairs.
      */
     private static Headers createHeadersFromMap(Map<String, String> headersMap) {
-        // Convert map entries into Header objects and collect them into an array
         Header[] headers = headersMap.entrySet().stream()
             .map(entry -> new Header(entry.getKey(), entry.getValue()))
             .toArray(Header[]::new);
 
-        return new Headers(headers); // Return the Headers object
+        return new Headers(headers);
     }
 
     /**
@@ -92,7 +91,7 @@ public class HeaderManager {
      * @return A Headers object containing the default headers.
      */
     public static Headers getDefaultHeaders() {
-        logger.info("Getting default headers."); // Log the action
-        return createHeadersFromMap(DEFAULT_HEADERS); // Convert default headers map to Headers object
+        logger.info("Getting default headers.");
+        return createHeadersFromMap(DEFAULT_HEADERS);
     }
 }

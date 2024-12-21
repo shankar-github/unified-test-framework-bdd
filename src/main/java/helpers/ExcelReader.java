@@ -1,13 +1,11 @@
+
 package helpers;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 import config.ConfigManager;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -27,14 +25,14 @@ public class ExcelReader {
     public static List<Map<String, String>> readExcel(String fileName) throws IOException {
         // Get the base directory path for the test data folder
         String basePath = ConfigManager.get("testDataFolderLocation");
-        if (basePath == null) {
-            logger.error("Base directory for test data folder is not defined in config.properties.");
-            throw new IOException("Base directory for test data folder is not defined.");
+        if (basePath == null || basePath.isEmpty()) {
+            String errorMsg = "Base directory for test data folder is not defined in config.properties.";
+            logger.error(errorMsg);
+            throw new IOException(errorMsg);
         }
 
         // Append the file name to the base path to form the complete file path
         String filePath = basePath + fileName;
-
         logger.info("Reading Excel file from: {}", filePath);
 
         List<Map<String, String>> data = new ArrayList<>();
@@ -44,12 +42,16 @@ public class ExcelReader {
 
             Sheet sheet = workbook.getSheetAt(0);
             if (sheet == null) {
-                throw new IOException("The Excel file does not contain any sheets.");
+                String errorMsg = "The Excel file does not contain any sheets.";
+                logger.error(errorMsg);
+                throw new IOException(errorMsg);
             }
 
             Row headerRow = sheet.getRow(0);
             if (headerRow == null) {
-                throw new IOException("The Excel file's first sheet does not contain a header row.");
+                String errorMsg = "The Excel file's first sheet does not contain a header row.";
+                logger.error(errorMsg);
+                throw new IOException(errorMsg);
             }
 
             List<String> headers = new ArrayList<>();
@@ -74,6 +76,10 @@ public class ExcelReader {
             }
 
             logger.info("Excel file successfully read. Total rows processed: {}", data.size());
+        } catch (IOException e) {
+            String errorMsg = "Error reading Excel file: " + e.getMessage();
+            logger.error(errorMsg, e);
+            throw e;
         }
 
         return data;
