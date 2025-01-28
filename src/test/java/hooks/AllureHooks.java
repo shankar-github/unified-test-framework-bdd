@@ -43,7 +43,10 @@ public class AllureHooks {
         // Log details of the scenario directly to Allure
         attachStepToReport(message + ": " + scenario.getName());
         attachStepToReport("Test Tags: " + scenario.getSourceTagNames());
+        
     }
+    
+    
 
     @Step("Log Scenario Status: {0} - Status: {1}")
     public void logScenarioStatus(String scenarioName, String status) {
@@ -66,4 +69,6 @@ public class AllureHooks {
         // This will attach the test data to the Allure report
         return content;
     }
+    
+    
 }

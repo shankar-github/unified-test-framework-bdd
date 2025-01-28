@@ -183,14 +183,55 @@ public class APIBase {
      * @param headers  The request headers.
      * @param body     The request body.
      */
+    /**
+     * Logs request and response details to Allure.
+     *
+     * @param method   The HTTP method.
+     * @param endpoint The endpoint.
+     * @param headers  The request headers.
+     * @param body     The request body.
+     */
     public void logRequestAndResponse(String method, String endpoint, Headers headers, String body) {
-        logger.info("Headers: {}", headers);
-        logger.info("Body: {}", body);
+        // Log request details
+        logger.info("Request Method: {}", method);
+        logger.info("Request Endpoint: {}", endpoint);
+        logger.info("Request Headers: {}", headers);
+        logger.info("Request Body: {}", body);
+        
+        // Attach request details to Allure report
+        Allure.addAttachment("HTTP Method", "text/plain", method, "txt");
+        Allure.addAttachment("Endpoint", "text/plain", endpoint, "txt");
         Allure.addAttachment("Request Headers", "application/json", headers.toString(), "json");
         Allure.addAttachment("Request Body", "application/json", body, "json");
-        logger.info("Response: {} {}", response.statusCode(), response.getBody().asString());
+
+        // Log response details
+        logger.info("Response Status: {} {}", response.statusCode(), response.getBody().asString());
+        logger.info("Response Body: {}", response.getBody().asString());
+        
+        // Attach response details to Allure report
+        Allure.addAttachment("Response Status", "text/plain", String.valueOf(response.statusCode()), "txt");
         Allure.addAttachment("Response Body", "application/json", response.getBody().asString(), "json");
+
+//        // Attach elapsed time (duration) for request-response cycle
+//        long duration = System.currentTimeMillis() - startTime;  // startTime should be set when the request is initiated
+//        Allure.addAttachment("Request Duration", "text/plain", String.valueOf(duration), "txt");
+
+        // Attach response headers if needed
+        Allure.addAttachment("Response Headers", "application/json", response.headers().toString(), "json");
+
+        // Attach correlation or request ID if available
+        String correlationId = response.getHeader("Correlation-ID");  // Assuming correlation ID is in the header
+        if (correlationId != null) {
+            Allure.addAttachment("Correlation ID", "text/plain", correlationId, "txt");
+        }
+
+        // Check for error messages and add them to the report if present
+        if (response.statusCode() >= 400) {
+            String errorMessage = response.getBody().asString();
+            Allure.addAttachment("Error Message", "text/plain", errorMessage, "txt");
+        }
     }
+
 
     /**
      * Verifies the status code of the response.
