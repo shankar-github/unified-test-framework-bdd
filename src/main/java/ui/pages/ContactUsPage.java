@@ -1,5 +1,6 @@
+package ui.pages;
 
-import com.unified.automation.ui.base.BasePage;
+import ui.base.BasePage;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -40,7 +41,7 @@ public class ContactUsPage extends BasePage {
 
     // Choose subject heading from the dropdown
     private void chooseSubjectHeading(String selectVal) {
-        selectFromDropDown(subjectHeadingDropdown, selectVal,"val")
+    	selectFromDropDown(subjectHeadingDropdown, selectVal,"val");
     }
 
     // Type email address in the email field

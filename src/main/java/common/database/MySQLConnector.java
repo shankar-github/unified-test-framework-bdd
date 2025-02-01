@@ -1,12 +1,12 @@
 
-package database;
+package common.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import config.ConfigManager;
+import common.config.ConfigManager;
 
 /**
  * The MySQLConnector class is responsible for establishing and managing a connection to a MySQL database.

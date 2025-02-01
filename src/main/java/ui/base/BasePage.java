@@ -1,4 +1,4 @@
-package com.unified.automation.ui.base;
+package ui.base;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.*;
@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 
 public class BasePage {
 
@@ -66,7 +67,7 @@ public class BasePage {
     }
 
     // Wait for element to be clickable
-    public WebElement waitForElement(WebElement element, int timeOutInSeconds) {
+    public WebElement waitForElement(WebElement element, Duration timeOutInSeconds) {
         try {
             WebDriverWait wait = new WebDriverWait(driver, timeOutInSeconds);
             return wait.until(ExpectedConditions.elementToBeClickable(element));

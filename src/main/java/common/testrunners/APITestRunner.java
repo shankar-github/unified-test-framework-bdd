@@ -1,4 +1,4 @@
-package runners;
+package common.testrunners;
 
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
@@ -15,9 +15,9 @@ import org.apache.logging.log4j.Logger;
     },
     monochrome = true                         // Clean console output
 )
-public class TestRunner extends AbstractTestNGCucumberTests {
+public class APITestRunner extends AbstractTestNGCucumberTests {
 
-    private static final Logger logger = LogManager.getLogger(TestRunner.class);
+    private static final Logger logger = LogManager.getLogger(APITestRunner.class);
 
     @Override
     @DataProvider(parallel = true)

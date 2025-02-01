@@ -1,7 +1,6 @@
-package com.ui.automation.framework.pages;
+package ui.pages;
 
-import com.ui.automation.framework.pages.BasePage;
-import com.ui.automation.framework.pages.SearchResultPage;
+import ui.base.BasePage;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -30,22 +29,26 @@ public class SignInPage extends BasePage {
 
     // Enter search text
     public void enterSearchText(String searchText) {
-        typeKeys(searchText, searchBox);
+    
+        sendKeys(searchBox,searchText);
     }
 
     // Click on the search button
     public void clickSearchButton() {
-        elementClick(searchButton);
+        
+        click(searchButton);
     }
 
     // Click on the Contact Us link
     public void clickContactUsLink() {
-        elementClick(contactUsLink);
+        
+        click(contactUsLink);
     }
 
     // Click on the Sign In link
     public void clickSignInLink() {
-        elementClick(signInLink);
+        
+        click(signInLink);
     }
 
     // Perform search and return SearchResultPage

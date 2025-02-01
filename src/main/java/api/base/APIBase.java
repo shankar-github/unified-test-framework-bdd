@@ -1,5 +1,5 @@
 
-package base;
+package api.base;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import config.ConfigManager;
+import common.config.ConfigManager;
 
 import java.io.File;
 import java.util.HashMap;

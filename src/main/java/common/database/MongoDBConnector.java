@@ -1,12 +1,12 @@
 
-package database;
+package common.database;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import config.ConfigManager;
+import common.config.ConfigManager;
 
 /**
  * The MongoDBConnector class is responsible for establishing and managing a connection to a MongoDB database.

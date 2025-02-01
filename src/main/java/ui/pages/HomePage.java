@@ -1,9 +1,6 @@
-package com.ui.automation.framework.pages;
+package ui.pages;
 
-import com.ui.automation.framework.pages.BasePage;
-import com.ui.automation.framework.pages.ContactUsPage;
-import com.ui.automation.framework.pages.SearchResultPage;
-import com.ui.automation.framework.pages.SignInPage;
+import ui.base.BasePage;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;

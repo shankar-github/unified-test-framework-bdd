@@ -1,11 +1,11 @@
 
-package steps;
+package api.steps;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import base.APIBase;
-import helpers.HeaderManager;
+import api.base.APIBase;
+import common.helpers.HeaderManager;
 import io.cucumber.java.en.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -1,5 +1,5 @@
 
-package helpers;
+package common.helpers;
 
 import io.restassured.http.Header;
 import io.restassured.http.Headers;

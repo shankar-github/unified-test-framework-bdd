@@ -1,6 +1,9 @@
-package listeners;
+package common.listeners;
 
 import io.qameta.allure.Attachment;
+
+import java.util.Arrays;
+
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -8,7 +11,7 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 import org.testng.Reporter;
-import utils.WebDriverManager; // Ensure WebDriverManager is implemented
+import common.utils.DriverFactory;  // Ensure WebDriverManager is implemented
 
 public class TestNGListener implements ITestListener {
 
@@ -34,9 +37,11 @@ public class TestNGListener implements ITestListener {
         }
 
         // Capture Screenshot only for UI tests
-        WebDriver driver = WebDriverManager.getDriver();
-        if (driver != null) {
-            attachScreenshotToReport(driver);
+        if (isUITest(result)) {
+            WebDriver driver = DriverFactory.getDriver("chrome"); // Or dynamically fetch the browser type if needed
+            if (driver != null) {
+                attachScreenshotToReport(driver);
+            }
         }
     }
 
@@ -68,4 +73,10 @@ public class TestNGListener implements ITestListener {
         }
         return new byte[0];
     }
+
+    // Helper method to check if the test is a UI test based on its tags
+    private boolean isUITest(ITestResult result) {
+        return Arrays.asList(result.getMethod().getGroups()).contains("UI");  // Convert the array to a list and check if "UI" is present
+    }
+
 }
