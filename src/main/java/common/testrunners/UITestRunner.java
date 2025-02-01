@@ -1,3 +1,4 @@
+
 package common.testrunners;
 
 import io.cucumber.testng.AbstractTestNGCucumberTests;
@@ -6,6 +7,10 @@ import org.testng.annotations.DataProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * UITestRunner class to run UI tests using Cucumber and TestNG.
+ * This class integrates with Allure for reporting and uses a logger for logging.
+ */
 @CucumberOptions(
         features = "src/test/resources/features/ui",  // Path to UI feature files
         glue = {"steps.ui", "hooks"},                // UI step definitions and hooks
@@ -19,6 +24,11 @@ public class UITestRunner extends AbstractTestNGCucumberTests {
 
     private static final Logger logger = LogManager.getLogger(UITestRunner.class);
 
+    /**
+     * Provides scenarios for parallel execution.
+     *
+     * @return an array of scenarios
+     */
     @Override
     @DataProvider(parallel = true)
     public Object[][] scenarios() {
