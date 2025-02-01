@@ -27,7 +27,7 @@ public class SignInPage extends BasePage {
     @FindBy(id = "user-name")
     private WebElement userNameElement;
 
-    @FindBy(className = "error-message-container error")
+    @FindBy(className = "error-message-container.error")
     private WebElement loginErrorMessage;
 
     /**
@@ -71,18 +71,11 @@ public class SignInPage extends BasePage {
      * @param password the password to enter
      * @return the DashboardPage if login is successful, otherwise the error message
      */
-    public Object doLogin(String userName, String password) {
+    public DashBoardPage doValidLogin(String userName, String password) {
         enterUserName(userName);
         enterPassword(password);
         clickLoginButton();
-
-        if (isLoginFailed()) {
-            logger.warn("Login failed");
-            return getLoginErrorMessage();
-        } else {
-            logger.info("Login successful");
-            return new DashBoardPage(driver);
-        }
+        return new DashBoardPage(driver);
     }
 
     /**
@@ -90,13 +83,11 @@ public class SignInPage extends BasePage {
      *
      * @return true if login failed, false otherwise
      */
-    public boolean isLoginFailed() {
-        try {
-            return loginErrorMessage.isDisplayed(); // Check if error message is visible
-        } catch (Exception e) {
-            logger.error("Error checking login failure", e);
-            return false;
-        }
+    public SignInPage doInvalidLogin(String userName, String password) {
+        enterUserName(userName);
+        enterPassword(password);
+        clickLoginButton();
+        return new SignInPage(driver);
     }
 
     /**

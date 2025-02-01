@@ -1,4 +1,4 @@
-//package steps;
+package steps.api;
 //import static io.restassured.RestAssured.*;
 //import static org.hamcrest.Matchers.*;
 //
@@ -41,3 +41,6 @@
 //         .body(containsString(responseMessage));
 //    }
 //}
+
+
+

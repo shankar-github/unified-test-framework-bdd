@@ -1,7 +1,5 @@
-/*
- * 
- * package steps;
- * 
+ package steps.api;
+ /* 
  * import base.APIBase; import config.ConfigManager; import
  * helpers.HeaderManager; import io.cucumber.datatable.DataTable; import
  * io.cucumber.java.en.Given; import io.cucumber.java.en.Then; import
@@ -72,3 +70,5 @@
 		 * throw e; } } }
 		 * 
 		 */
+
+

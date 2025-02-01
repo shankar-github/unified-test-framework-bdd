@@ -1,5 +1,5 @@
 
-package common.hooks;
+package hooks;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -11,7 +11,7 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import common.testrunners.DriverFactory;
+import testrunners.DriverFactory;
 import java.util.Collection;
 
 /**

@@ -1,5 +1,5 @@
 
-package common.listeners;
+package listeners;
 
 import io.qameta.allure.Attachment;
 import org.apache.logging.log4j.LogManager;
@@ -11,7 +11,7 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 import org.testng.Reporter;
-import common.testrunners.DriverFactory;
+import testrunners.DriverFactory;
 
 import java.util.Arrays;
 

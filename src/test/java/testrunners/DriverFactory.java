@@ -1,5 +1,4 @@
-
-package common.testrunners;
+package testrunners;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
@@ -7,12 +6,12 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.safari.SafariDriver;
+
+import common.config.ConfigManager;
+
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import java.time.Duration;
-import java.util.Properties;
-import java.io.FileInputStream;
-import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,24 +23,11 @@ import org.apache.logging.log4j.Logger;
 public class DriverFactory {
 
     private static final ThreadLocal<WebDriver> driverThreadLocal = new ThreadLocal<>();
-    private static String baseURL;
-    private static String browser;
+    private static String baseURL = ConfigManager.get("baseURL");
+    private static String browser = ConfigManager.get("browser");
 
     // Initialize Logger
     private static final Logger logger = LogManager.getLogger(DriverFactory.class);
-
-    static {
-        // Load baseURL and browser from configuration file
-        try (FileInputStream input = new FileInputStream("config.properties")) {
-            Properties properties = new Properties();
-            properties.load(input);
-            baseURL = properties.getProperty("baseURL");
-            browser = properties.getProperty("browser", "chrome");
-            logger.info("Loaded configuration: baseURL = " + baseURL + ", browser = " + browser);
-        } catch (IOException e) {
-            logger.error("Error loading config.properties", e);
-        }
-    }
 
     /**
      * Gets the WebDriver instance for the current thread.
@@ -50,12 +36,27 @@ public class DriverFactory {
      * @return the WebDriver instance
      */
     public static WebDriver getDriver() {
+        // Validate configuration
+        validateConfiguration();
+
         if (driverThreadLocal.get() == null) {
             logger.info("Initializing driver...");
-            driverThreadLocal.set(createDriver(browser, baseURL));  // Default to chrome if not passed
+            driverThreadLocal.set(createDriver(browser, baseURL));  // Initialize driver based on browser
         }
-        WebDriver driver = driverThreadLocal.get();
-        return driver;
+        return driverThreadLocal.get();
+    }
+
+    /**
+     * Validates the configuration to ensure necessary values are provided.
+     */
+    private static void validateConfiguration() {
+        if (browser == null || browser.isEmpty()) {
+            throw new IllegalArgumentException("Browser configuration is missing or empty.");
+        }
+
+        if (baseURL == null || baseURL.isEmpty()) {
+            throw new IllegalArgumentException("Base URL configuration is missing or empty.");
+        }
     }
 
     /**
@@ -118,10 +119,13 @@ public class DriverFactory {
      * Removes the WebDriver instance from the ThreadLocal storage.
      */
     public static void quitDriver() {
-        if (driverThreadLocal.get() != null) {
+        WebDriver driver = driverThreadLocal.get();
+        if (driver != null) {
             logger.info("Quitting driver...");
-            driverThreadLocal.get().quit();
+            driver.quit();
             driverThreadLocal.remove();
+        } else {
+            logger.warn("Driver is already null. Nothing to quit.");
         }
     }
 }

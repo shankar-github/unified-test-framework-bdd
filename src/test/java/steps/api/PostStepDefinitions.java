@@ -1,6 +1,8 @@
-/*
- * package steps;
- * 
+ package steps.api;
+ 
+ 
+ 
+/* 
  * import com.fasterxml.jackson.core.JsonProcessingException; import
  * com.fasterxml.jackson.databind.ObjectMapper;
  * 
@@ -13,7 +15,7 @@
  * import java.io.IOException; import java.util.ArrayList; import
  * java.util.HashMap; import java.util.List; import java.util.Map;
  * 
- *//**
+ *
 	 * Step definitions for handling POST requests in Cucumber tests.
 	 */
 /*
@@ -133,3 +135,5 @@
 		 * logger.error("Response body verification failed: {}", e.getMessage(), e);
 		 * throw e; } } }
 		 */
+
+

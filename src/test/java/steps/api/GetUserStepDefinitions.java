@@ -1,5 +1,5 @@
 
-package api.steps;
+package steps.api;
 
 import java.util.HashMap;
 import java.util.Map;
