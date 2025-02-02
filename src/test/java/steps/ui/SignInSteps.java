@@ -13,8 +13,8 @@ public class SignInSteps {
 
     private WebDriver driver;
     private SignInPage signInPage;
-    private Object loginResult;
     private DashBoardPage dashBoardPage;
+    private String loginErrorMessage;
 
     public SignInSteps() {
         // Get the driver from DriverFactory (initialized in Hooks)
@@ -26,27 +26,35 @@ public class SignInSteps {
         signInPage = new SignInPage(driver);
     }
 
-    @When("the user enters valid credentials with username {string} and password {string} for {string}")
-    public void the_user_logs_in_with_username_and_password(String username, String password, String testCase) {
-    	testCase = testCase.toLowerCase().trim();
-    	if (testCase.equals("valid")) {
-    		dashBoardPage = signInPage.doValidLogin(username, password);
-    		}else {
-    			signInPage.doInvalidLogin(username, password);
-    		}
+    @When("the user enters valid credentials with username {string} and password {string}")
+    
+    public void the_user_logs_in_with_valid_username_and_password(String username, String password) {
+        // Perform login with valid or invalid credentials
+        dashBoardPage = signInPage.doValidLogin(username, password);
+    }
+    
+   @When("the user enters invalid credentials with username {string} and password {string}")
+    
+    public void the_user_logs_in_with_invalid_username_and_password(String username, String password) {
+        // Perform login with valid or invalid credentials
+        signInPage = signInPage.doInvalidLogin(username, password);
     }
 
-    @Then("the user should be redirected to the dashboard")
-    public void the_user_should_be_redirected_to_the_dashboard() {
-		Assert.assertTrue(dashBoardPage.getSwagText().contains("Swag Labs"),
-				"User is not redirected to the dashboard.");
-    }
+   @Then("the user should be redirected to the dashboard with message {string}")
+   public void the_user_should_see_dashboard_text(String expectedText) {
+       Assert.assertNotNull(dashBoardPage, "Dashboard page is null. Login might have failed.");
+       Assert.assertTrue(dashBoardPage.getSwagText().contains(expectedText),
+               "User is not redirected to the dashboard.");
+   }
+
 
     @Then("the user should see an error message {string}")
     public void the_user_should_see_an_error_message(String expectedErrorMessage) {
-		Assert.assertTrue(signInPage.getLoginErrorMessage().contains(expectedErrorMessage),
-				"Error message is not displayed.");
-        
-       
+        // Get the error message from the SignInPage
+        loginErrorMessage = signInPage.getLoginErrorMessage();
+
+        // Assert if the error message matches the expected one
+        Assert.assertTrue(loginErrorMessage.equals(expectedErrorMessage),
+                "Error message mismatch. Expected: " + expectedErrorMessage + " but got: " + loginErrorMessage);
     }
 }

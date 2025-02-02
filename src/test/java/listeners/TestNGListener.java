@@ -54,23 +54,24 @@ public class TestNGListener implements ITestListener {
      */
     @Override
     public void onTestFailure(ITestResult result) {
-        Reporter.log("Test Failed: " + result.getMethod().getMethodName(), true);
-        logger.error("Test Failed: {}", result.getMethod().getMethodName());
-
-        Throwable throwable = result.getThrowable();
-        if (throwable != null) {
-            attachTextToReport("Failure Reason", throwable.getMessage());
-            logger.error("Failure Reason: {}", throwable.getMessage());
-        }
-
-        // Capture Screenshot only for UI tests
-        if (isUITest(result)) {
-            WebDriver driver = DriverFactory.getDriver();
-            if (driver != null) {
-                attachScreenshotToReport(driver);
-                logger.info("Screenshot attached for test: {}", result.getMethod().getMethodName());
-            }
-        }
+//        Reporter.log("Test Failed: " + result.getMethod().getMethodName(), true);
+//        logger.error("Test Failed: {}", result.getMethod().getMethodName());
+//
+//        Throwable throwable = result.getThrowable();
+//        if (throwable != null) {
+//            attachTextToReport("Failure Reason", throwable.getMessage());
+//            logger.error("Failure Reason: {}", throwable.getMessage());
+//        }
+//
+//        // Capture Screenshot only for UI tests
+//        if (isUITest(result)) {
+//            WebDriver driver = DriverFactory.getDriver();
+//            if (driver != null) {
+//                attachScreenshotToReport(driver);
+//                logger.info("Screenshot attached for test: {}", result.getMethod().getMethodName());
+//            }
+//        }
+    	System.out.println("TestNGListener: Test Failed - " + result.getName());
     }
 
     /**

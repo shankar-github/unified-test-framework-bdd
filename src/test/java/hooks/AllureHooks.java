@@ -1,123 +1,98 @@
 
 package hooks;
 
-import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.After;
 import io.cucumber.java.Scenario;
-import io.qameta.allure.Attachment;
-import io.qameta.allure.Step;
+import io.qameta.allure.Allure;
+import io.restassured.RestAssured;
+import io.restassured.filter.log.RequestLoggingFilter;
+import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.response.Response;
+import testrunners.DriverFactory;
+
+import org.apache.commons.io.output.WriterOutputStream;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import testrunners.DriverFactory;
+
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
-/**
- * AllureHooks class to handle before and after scenario hooks for UI tests.
- * This class integrates with Allure for reporting and uses a logger for logging.
- */
 public class AllureHooks {
-    private WebDriver driver;
-    private static final Logger logger = LogManager.getLogger(AllureHooks.class);
 
-    /**
-     * Method to be executed before each scenario.
-     * Initializes the WebDriver if the scenario is a UI test.
-     *
-     * @param scenario the current scenario
-     */
+    private static final ThreadLocal<StringWriter> requestWriter = new ThreadLocal<>();
+    private static final ThreadLocal<StringWriter> responseWriter = new ThreadLocal<>();
+    private static final ThreadLocal<Response> apiResponse = new ThreadLocal<>();
+    private static final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
+    private static final ThreadLocal<String> testData = new ThreadLocal<>();
+
     @Before
     public void beforeScenario(Scenario scenario) {
-        logScenarioDetails("Starting Test Case", scenario);
-        logger.info("Starting scenario: {}", scenario.getName());
+        requestWriter.set(new StringWriter());
+        responseWriter.set(new StringWriter());
 
-        if (isUITest(scenario)) {
-            driver = DriverFactory.getDriver();
-            logger.info("WebDriver initialized for scenario: {}", scenario.getName());
+        // Automatically log API requests/responses
+        RestAssured.filters(
+                new RequestLoggingFilter(new PrintStream(new WriterOutputStream(requestWriter.get(), StandardCharsets.UTF_8))),
+                new ResponseLoggingFilter(new PrintStream(new WriterOutputStream(responseWriter.get(), StandardCharsets.UTF_8)))
+        );
+
+        // Initialize WebDriver for UI tests
+        if (scenario.getSourceTagNames().contains("@UI")) {
+            driver.set(DriverFactory.getDriver());
         }
+
+        // Capture test data dynamically from the scenario's step arguments
+        captureTestData(scenario);
     }
 
-    /**
-     * Method to be executed after each scenario.
-     * Logs the scenario status and attaches a screenshot if the scenario failed.
-     * Quits the WebDriver if it was initialized.
-     *
-     * @param scenario the current scenario
-     */
     @After
     public void afterScenario(Scenario scenario) {
-        logScenarioStatus(scenario);
-        logger.info("Finished scenario: {}", scenario.getName());
-
-        if (scenario.isFailed() && isUITest(scenario)) {
-            attachScreenshotToReport();
-            logger.error("Scenario failed: {}. Screenshot attached.", scenario.getName());
+        if (scenario.getSourceTagNames().contains("@api")) {
+            attachApiDetails();
         }
 
-        if (isUITest(scenario)) {
-            DriverFactory.quitDriver();
-            logger.info("WebDriver quit for scenario: {}", scenario.getName());
+        if (scenario.getSourceTagNames().contains("@UI")) {
+            attachUiDetails(scenario);
+        }
+
+        // Cleanup WebDriver after UI test
+        if (driver.get() != null) {
+            driver.get().quit();
         }
     }
 
-    /**
-     * Checks if the scenario is a UI test based on its tags.
-     *
-     * @param scenario the current scenario
-     * @return true if the scenario is a UI test, false otherwise
-     */
-    private boolean isUITest(Scenario scenario) {
-        Collection<String> tags = scenario.getSourceTagNames();
-        return tags.stream().anyMatch(tag -> tag.equalsIgnoreCase("@UI"));
+    // Capture test data dynamically from the scenario's step arguments
+    private void captureTestData(Scenario scenario) {
+        StringBuilder testDataBuilder = new StringBuilder("Test Data:\n");
+
+        // Capture scenario tags (like @UI or @api)
+        scenario.getSourceTagNames().forEach(tag -> testDataBuilder.append(tag).append("\n"));
+
+        // Save this collected data to a ThreadLocal variable for later use
+        testData.set(testDataBuilder.toString());
     }
 
-    /**
-     * Logs the details of the scenario.
-     *
-     * @param message  the message to log
-     * @param scenario the current scenario
-     */
-    private void logScenarioDetails(String message, Scenario scenario) {
-        attachStepToReport(message + ": " + scenario.getName());
-        attachStepToReport("Test Tags: " + scenario.getSourceTagNames());
-        logger.info("{}: {}", message, scenario.getName());
+    // Attach API request & response details
+    private void attachApiDetails() {
+        Allure.addAttachment("API Request", requestWriter.get().toString());
+        Allure.addAttachment("API Response", responseWriter.get().toString());
     }
 
-    /**
-     * Logs the status of the scenario.
-     *
-     * @param scenario the current scenario
-     */
-    @Step("Test Case: {0} - Status: {1}")
-    private void logScenarioStatus(Scenario scenario) {
-        String status = scenario.isFailed() ? "FAILED" : "PASSED";
-        attachStepToReport(scenario.getName() + " - Status: " + status);
-        logger.info("Scenario {} - Status: {}", scenario.getName(), status);
-    }
-
-    /**
-     * Attaches a screenshot to the Allure report if the scenario failed.
-     *
-     * @return the screenshot as a byte array
-     */
-    @Attachment(value = "Screenshot on Failure", type = "image/png")
-    public byte[] attachScreenshotToReport() {
-        if (driver instanceof TakesScreenshot) {
-            return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+    // Attach UI test details & failure screenshot
+    private void attachUiDetails(Scenario scenario) {
+        // Attach the test data (captured from the scenario's steps)
+        if (testData.get() != null) {
+            Allure.addAttachment("Test Data", testData.get());
         }
-        return new byte[0];
-    }
 
-    /**
-     * Attaches a step to the Allure report.
-     *
-     * @param message the message to attach
-     * @return the message
-     */
-    @Attachment(value = "{0}", type = "text/plain")
-    public String attachStepToReport(String message) {
-        return message;
+        // Capture and attach screenshot on failure
+        if (scenario.isFailed() && driver.get() != null) {
+            byte[] screenshot = ((TakesScreenshot) driver.get()).getScreenshotAs(OutputType.BYTES);
+            Allure.addAttachment("UI Failure Screenshot", "image/png", new ByteArrayInputStream(screenshot), "png");
+        }
     }
 }

@@ -2,6 +2,8 @@
 Feature: User  API Testing
 @api
   Scenario Outline: Validate user details and error cases
+    @data_userId=<userId> @data_statusCode=<statusCode> @data_expectedResponse="<responseMessage>"
+    @request_GET_/users/<userId>
     Given the API endpoint is set to /users/"<userId>"
     When a GET request is sent to the endpoint
     Then the status code should be <statusCode>

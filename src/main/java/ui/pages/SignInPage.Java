@@ -27,7 +27,7 @@ public class SignInPage extends BasePage {
     @FindBy(id = "user-name")
     private WebElement userNameElement;
 
-    @FindBy(className = "error-message-container.error")
+    @FindBy(xpath = "//h3[@data-test='error']")
     private WebElement loginErrorMessage;
 
     /**
@@ -75,6 +75,7 @@ public class SignInPage extends BasePage {
         enterUserName(userName);
         enterPassword(password);
         clickLoginButton();
+        System.out.println("Login successful");
         return new DashBoardPage(driver);
     }
 
@@ -87,6 +88,7 @@ public class SignInPage extends BasePage {
         enterUserName(userName);
         enterPassword(password);
         clickLoginButton();
+        System.out.println("Login failed");
         return new SignInPage(driver);
     }
 
